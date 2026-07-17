@@ -62,10 +62,17 @@ tasks.named('check') {
     dependsOn tasks.named('jacocoTestCoverageVerification')
 }
 
+// A repo with mock-heavy test code can relax the ktlint line length by setting
+// conventions.kotlinMaxLineLength (e.g. 160) in its gradle.properties; unset keeps the default.
+def kotlinMaxLineLength = providers.gradleProperty('conventions.kotlinMaxLineLength').orNull
+
 spotless {
     kotlin {
         target 'src/**/*.kt'
-        ktlint('1.5.0')
+        def ktlintStep = ktlint('1.5.0')
+        if (kotlinMaxLineLength) {
+            ktlintStep.editorConfigOverride(['max_line_length': kotlinMaxLineLength])
+        }
     }
     kotlinGradle {
         target '*.gradle.kts'
