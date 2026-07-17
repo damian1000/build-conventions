@@ -1,0 +1,86 @@
+// Shared Java build conventions for the damian1000 repositories: JDK 25 toolchain, the 90% JaCoCo
+// instruction gate, Spotless (JDK-agnostic Java hygiene + Prettier for config/docs), OWASP
+// dependency-check, and the JUnit 6 test wiring. A consumer applies this plugin and declares only
+// what is specific to it.
+plugins {
+    id 'java'
+    id 'jacoco'
+    id 'com.diffplug.spotless'
+    id 'org.owasp.dependencycheck'
+}
+
+repositories {
+    mavenCentral()
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(25)
+    }
+}
+
+dependencies {
+    testImplementation platform('org.junit:junit-bom:6.1.2')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+    finalizedBy tasks.named('jacocoTestReport')
+}
+
+tasks.named('jacocoTestReport') {
+    dependsOn tasks.named('test')
+    reports {
+        xml.required = true
+        html.required = true
+    }
+}
+
+tasks.named('jacocoTestCoverageVerification') {
+    dependsOn tasks.named('jacocoTestReport')
+    violationRules {
+        rule {
+            limit {
+                counter = 'INSTRUCTION'
+                value = 'COVEREDRATIO'
+                minimum = 0.90
+            }
+        }
+    }
+}
+
+tasks.named('check') {
+    dependsOn tasks.named('jacocoTestCoverageVerification')
+}
+
+spotless {
+    java {
+        target 'src/**/*.java'
+        // Structural formatters (google-java-format / palantir-java-format) rely on internal
+        // javac APIs that changed in JDK 25; JDK-agnostic hygiene rules until upstream catches up.
+        removeUnusedImports()
+        trimTrailingWhitespace()
+        endWithNewline()
+    }
+    // Config/docs (YAML workflows, Markdown) held to the same bar. Needs Node on PATH for Prettier.
+    format 'config', {
+        target '.github/**/*.yml', '.github/**/*.yaml', '*.md'
+        prettier('3.4.2')
+        trimTrailingWhitespace()
+        endWithNewline()
+    }
+}
+
+// OWASP dependency vulnerability scanner. Fails the build on any dependency with CVSS >= 7.0.
+dependencyCheck {
+    failBuildOnCVSS = 7.0f
+    formats = ['HTML', 'JSON']
+    analyzers {
+        assemblyEnabled = false
+        nodeEnabled = false
+        nodeAuditEnabled = false
+        nuspecEnabled = false
+    }
+}
