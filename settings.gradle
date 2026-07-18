@@ -5,7 +5,7 @@ plugins {
 
 rootProject.name = 'build-conventions'
 
-// The root project is the convention plugins (so the com.github.damian1000:build-conventions
-// coordinate consumers' pluginManagement maps to is the plugin jar); :catalog publishes the
-// shared version catalog, served by JitPack as com.github.damian1000.build-conventions:catalog.
-include ':catalog'
+// :plugins publishes the convention plugins, :catalog the shared version catalog. JitPack
+// serves multi-module builds under the dotted group, so consumers reference
+// com.github.damian1000.build-conventions:plugins and :catalog.
+include ':plugins', ':catalog'

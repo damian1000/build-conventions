@@ -8,6 +8,7 @@ plugins {
 group = 'com.github.damian1000.build-conventions'
 version = rootProject.version
 
+
 catalog {
     versionCatalog {
         from(files('../gradle/libs.versions.toml'))

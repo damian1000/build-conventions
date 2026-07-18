@@ -32,7 +32,7 @@ pluginManagement {
     resolutionStrategy {
         eachPlugin {
             if (requested.id.namespace == 'io.github.damian1000') {
-                useModule("com.github.damian1000:build-conventions:${requested.version}")
+                useModule("com.github.damian1000.build-conventions:plugins:${requested.version}")
             }
         }
     }
@@ -43,7 +43,7 @@ pluginManagement {
 
 ```groovy
 plugins {
-    id 'io.github.damian1000.kotlin-conventions' version '0.4.0'
+    id 'io.github.damian1000.kotlin-conventions' version '0.4.1'
     id 'application' // if the repository is an application
 }
 
@@ -66,7 +66,7 @@ dependencyResolutionManagement {
     }
     versionCatalogs {
         create('deps') {
-            from 'com.github.damian1000.build-conventions:catalog:0.4.0'
+            from 'com.github.damian1000.build-conventions:catalog:0.4.1'
         }
     }
 }
