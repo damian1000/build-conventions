@@ -1,0 +1,39 @@
+// Shared conventions for a multi-module repository's root project. Modules apply
+// kotlin-conventions; the root holds only what spans the whole repository — formatting for
+// the Gradle scripts, CI config, and docs, plus the OWASP aggregate scan.
+plugins {
+    id 'com.diffplug.spotless'
+    id 'org.owasp.dependencycheck'
+}
+
+// Spotless provisions its formatters through the root project.
+repositories {
+    mavenCentral()
+}
+
+spotless {
+    kotlinGradle {
+        target '*.gradle.kts'
+        ktlint('1.5.0')
+    }
+    // Config/docs (YAML workflows, Markdown) held to the same bar. Needs Node on PATH for Prettier.
+    format 'config', {
+        target '.github/**/*.yml', '.github/**/*.yaml', '*.md'
+        prettier('3.4.2')
+        trimTrailingWhitespace()
+        endWithNewline()
+    }
+}
+
+// OWASP dependency vulnerability scanner across all modules: ./gradlew dependencyCheckAggregate
+// Fails the build on any dependency with CVSS >= 7.0.
+dependencyCheck {
+    failBuildOnCVSS = 7.0f
+    formats = ['HTML', 'JSON']
+    analyzers {
+        assemblyEnabled = false
+        nodeEnabled = false
+        nodeAuditEnabled = false
+        nuspecEnabled = false
+    }
+}

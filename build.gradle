@@ -3,12 +3,13 @@ plugins {
     // whose id is the file's base name.
     id 'groovy-gradle-plugin'
     id 'maven-publish'
+    id 'com.diffplug.spotless' version '8.8.0'
 }
 
 // JitPack publishes under com.github.<user>; the convention plugins resolve to this module
 // via a settings resolutionStrategy in each consumer (see README).
 group = 'com.github.damian1000'
-version = '0.2.0'
+version = '0.3.0'
 
 java {
     toolchain {
@@ -27,4 +28,19 @@ dependencies {
     implementation 'org.jetbrains.kotlin:kotlin-gradle-plugin:2.3.21'
     implementation 'com.diffplug.spotless:spotless-plugin-gradle:8.8.0'
     implementation 'org.owasp:dependency-check-gradle:12.2.2'
+}
+
+// This repository is held to the same formatting bar it imposes on its consumers.
+spotless {
+    groovyGradle {
+        target '*.gradle', 'src/main/groovy/*.gradle'
+        trimTrailingWhitespace()
+        endWithNewline()
+    }
+    format 'config', {
+        target '.github/**/*.yml', '.github/**/*.yaml', '*.md'
+        prettier('3.4.2')
+        trimTrailingWhitespace()
+        endWithNewline()
+    }
 }

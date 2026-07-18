@@ -6,10 +6,16 @@ dependencies and, for an application, its main class.
 
 ## Plugins
 
-| Plugin                                      | For          | Provides                                                                                                    |
-| ------------------------------------------- | ------------ | ----------------------------------------------------------------------------------------------------------- |
-| `io.github.damian1000.kotlin-conventions`   | Kotlin JVM   | JDK 25 toolchain, pinned Kotlin, 90% JaCoCo instruction gate, Spotless (ktlint + Prettier), OWASP, JUnit 6. |
-| `io.github.damian1000.java-conventions`     | plain Java   | The same, with Spotless JDK-agnostic Java hygiene in place of ktlint.                                        |
+| Plugin                                    | For               | Provides                                                                                                    |
+| ----------------------------------------- | ----------------- | ----------------------------------------------------------------------------------------------------------- |
+| `io.github.damian1000.kotlin-conventions` | Kotlin JVM        | JDK 25 toolchain, pinned Kotlin, 90% JaCoCo instruction gate, Spotless (ktlint + Prettier), OWASP, JUnit 6. |
+| `io.github.damian1000.java-conventions`   | plain Java        | The same, with Spotless JDK-agnostic Java hygiene in place of ktlint.                                       |
+| `io.github.damian1000.root-conventions`   | multi-module root | Repo-wide Spotless (Gradle scripts, CI config, docs) and the OWASP aggregate; modules apply a plugin above. |
+
+Front-end tooling in `kotlin-conventions` is content-driven: web assets under
+`src/main/resources/web` are Prettier-formatted under `spotlessCheck`, and a `package.json`
+wires `npm run lint` (ESLint) into `check`. A repository is different only because of what it
+holds — the CI pipeline stays identical.
 
 ## Consuming
 
@@ -36,7 +42,7 @@ pluginManagement {
 
 ```groovy
 plugins {
-    id 'io.github.damian1000.kotlin-conventions' version '0.1.0'
+    id 'io.github.damian1000.kotlin-conventions' version '0.3.0'
     id 'application' // if the repository is an application
 }
 
