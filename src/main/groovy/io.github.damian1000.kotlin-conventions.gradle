@@ -90,12 +90,12 @@ spotless {
 }
 
 // A project that holds front-end assets gets them formatted to the same bar: Prettier under
-// the one spotlessCheck the build already gates on.
-def webAssets = 'src/main/resources/web'
-if (project.file(webAssets).exists()) {
+// the one spotlessCheck the build already gates on. Targets must be plain String literals —
+// Spotless treats a GString as a file path, not an Ant-style pattern.
+if (project.file('src/main/resources/web').exists()) {
     spotless {
         format 'web', {
-            target "${webAssets}/**/*.html", "${webAssets}/**/*.css", "${webAssets}/**/*.js"
+            target 'src/main/resources/web/**/*.html', 'src/main/resources/web/**/*.css', 'src/main/resources/web/**/*.js'
             prettier('3.4.2')
             trimTrailingWhitespace()
             endWithNewline()
