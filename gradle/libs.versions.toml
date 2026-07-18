@@ -1,0 +1,32 @@
+# Versions genuinely shared across the damian1000 repositories. Application-specific
+# dependencies stay in each repo's build file; a version belongs here only when two or
+# more repos declare it.
+
+[versions]
+commons-lang = "3.20.0"
+flyway = "12.11.0"
+gson = "2.14.0"
+h2 = "2.4.240"
+hamcrest = "3.0"
+kafka = "4.3.1"
+oracle = "23.26.2.0.0"
+slf4j = "2.0.18"
+testcontainers = "1.21.4"
+
+[libraries]
+commons-lang3 = { module = "org.apache.commons:commons-lang3", version.ref = "commons-lang" }
+flyway-core = { module = "org.flywaydb:flyway-core", version.ref = "flyway" }
+flyway-oracle = { module = "org.flywaydb:flyway-database-oracle", version.ref = "flyway" }
+flyway-postgresql = { module = "org.flywaydb:flyway-database-postgresql", version.ref = "flyway" }
+gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
+h2 = { module = "com.h2database:h2", version.ref = "h2" }
+hamcrest = { module = "org.hamcrest:hamcrest", version.ref = "hamcrest" }
+kafka-clients = { module = "org.apache.kafka:kafka-clients", version.ref = "kafka" }
+oracle-jdbc = { module = "com.oracle.database.jdbc:ojdbc17", version.ref = "oracle" }
+oracle-pki = { module = "com.oracle.database.security:oraclepki", version.ref = "oracle" }
+slf4j-api = { module = "org.slf4j:slf4j-api", version.ref = "slf4j" }
+slf4j-simple = { module = "org.slf4j:slf4j-simple", version.ref = "slf4j" }
+testcontainers-junit-jupiter = { module = "org.testcontainers:junit-jupiter", version.ref = "testcontainers" }
+testcontainers-kafka = { module = "org.testcontainers:kafka", version.ref = "testcontainers" }
+testcontainers-oracle-free = { module = "org.testcontainers:oracle-free", version.ref = "testcontainers" }
+testcontainers-postgresql = { module = "org.testcontainers:postgresql", version.ref = "testcontainers" }

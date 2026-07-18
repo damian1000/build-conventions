@@ -9,7 +9,7 @@ plugins {
 // JitPack publishes under com.github.<user>; the convention plugins resolve to this module
 // via a settings resolutionStrategy in each consumer (see README).
 group = 'com.github.damian1000'
-version = '0.3.0'
+version = '0.4.0'
 
 java {
     toolchain {
@@ -33,13 +33,19 @@ dependencies {
 // This repository is held to the same formatting bar it imposes on its consumers.
 spotless {
     groovyGradle {
-        target '*.gradle', 'src/main/groovy/*.gradle'
+        target '*.gradle', 'src/main/groovy/*.gradle', 'catalog/*.gradle'
         trimTrailingWhitespace()
         endWithNewline()
     }
     format 'config', {
         target '.github/**/*.yml', '.github/**/*.yaml', '*.md'
         prettier('3.4.2')
+        trimTrailingWhitespace()
+        endWithNewline()
+    }
+    // Prettier ships no TOML parser; hygiene rules only.
+    format 'catalog', {
+        target 'gradle/*.toml'
         trimTrailingWhitespace()
         endWithNewline()
     }
