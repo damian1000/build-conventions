@@ -1,8 +1,9 @@
 # build-conventions
 
-Shared Gradle build conventions for the `damian1000` repositories, published via JitPack. A
-repository applies one convention plugin and then declares only what is specific to it — its
-dependencies and, for an application, its main class.
+The shared Gradle build platform for the `damian1000` repositories, published via JitPack:
+convention plugins plus a shared version catalog (`:catalog`). A repository applies one
+convention plugin and then declares only what is specific to it — its dependencies and, for
+an application, its main class.
 
 ## Plugins
 
@@ -42,7 +43,7 @@ pluginManagement {
 
 ```groovy
 plugins {
-    id 'io.github.damian1000.kotlin-conventions' version '0.3.0'
+    id 'io.github.damian1000.kotlin-conventions' version '0.4.0'
     id 'application' // if the repository is an application
 }
 
@@ -50,3 +51,25 @@ dependencies {
     // only what this repository actually needs
 }
 ```
+
+## Version catalog
+
+`gradle/libs.versions.toml` holds only versions two or more repos genuinely share — hamcrest,
+slf4j, the Oracle driver pair, testcontainers, flyway, kafka-clients, commons-lang3, h2, gson.
+Application-specific dependencies stay in each repo's build file. Import it in
+`settings.gradle`:
+
+```groovy
+dependencyResolutionManagement {
+    repositories {
+        maven { url 'https://jitpack.io' }
+    }
+    versionCatalogs {
+        create('deps') {
+            from 'com.github.damian1000.build-conventions:catalog:0.4.0'
+        }
+    }
+}
+```
+
+Then in `build.gradle`: `testImplementation deps.hamcrest`, `runtimeOnly deps.slf4j.simple`.

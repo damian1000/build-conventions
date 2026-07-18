@@ -1,0 +1,23 @@
+// The shared version catalog: versions two or more repos genuinely share, from the TOML at
+// gradle/libs.versions.toml. Application-specific dependencies stay in each repo's build file.
+plugins {
+    id 'version-catalog'
+    id 'maven-publish'
+}
+
+group = 'com.github.damian1000.build-conventions'
+version = rootProject.version
+
+catalog {
+    versionCatalog {
+        from(files('../gradle/libs.versions.toml'))
+    }
+}
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            from components.versionCatalog
+        }
+    }
+}
