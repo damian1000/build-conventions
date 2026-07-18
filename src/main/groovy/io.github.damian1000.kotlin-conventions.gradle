@@ -1,7 +1,9 @@
 // Shared Kotlin build conventions for the damian1000 repositories: JDK 25 toolchain, the pinned
 // Kotlin version, the 90% JaCoCo instruction gate, Spotless (ktlint + Prettier for config/docs),
 // OWASP dependency-check, and the JUnit 6 test wiring. A consumer applies this plugin and then
-// declares only what is specific to it (its dependencies, an application main class).
+// declares only what is specific to it (its dependencies, an application main class). Front-end
+// tooling is content-driven: web assets under src/main/resources/web are Prettier-formatted, and
+// a package.json wires `npm run lint` (ESLint) into `check`.
 plugins {
     id 'org.jetbrains.kotlin.jvm'
     id 'jacoco'
@@ -84,6 +86,40 @@ spotless {
         prettier('3.4.2')
         trimTrailingWhitespace()
         endWithNewline()
+    }
+}
+
+// A project that holds front-end assets gets them formatted to the same bar: Prettier under
+// the one spotlessCheck the build already gates on.
+def webAssets = 'src/main/resources/web'
+if (project.file(webAssets).exists()) {
+    spotless {
+        format 'web', {
+            target "${webAssets}/**/*.html", "${webAssets}/**/*.css", "${webAssets}/**/*.js"
+            prettier('3.4.2')
+            trimTrailingWhitespace()
+            endWithNewline()
+        }
+    }
+}
+
+// A project that carries npm lint tooling (a package.json) has its ESLint run wired into
+// `check`, so lint failures fail the build rather than needing a separate CI step.
+if (project.file('package.json').exists()) {
+    def npmCommand = System.getProperty('os.name').toLowerCase().contains('windows') ? ['cmd', '/c', 'npm'] : ['npm']
+    def npmCi = tasks.register('npmCi', Exec) {
+        description = 'Installs the pinned npm toolchain (npm ci).'
+        commandLine(npmCommand + ['ci'])
+        inputs.files('package.json', 'package-lock.json')
+        outputs.dir('node_modules')
+    }
+    def eslint = tasks.register('eslint', Exec) {
+        description = 'Lints the front-end assets (npm run lint).'
+        dependsOn npmCi
+        commandLine(npmCommand + ['run', 'lint'])
+    }
+    tasks.named('check') {
+        dependsOn eslint
     }
 }
 
