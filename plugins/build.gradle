@@ -10,8 +10,12 @@ group = 'com.github.damian1000.build-conventions'
 version = rootProject.version
 
 java {
+    // The plugin JAR targets JDK 21, not 25: a Gradle plugin must load on whatever JVM Gradle
+    // itself runs (17+), and JitPack builds consumers on 21 — a 25-bytecode plugin can't be loaded
+    // there. This is the plugin module's own bytecode only; the convention scripts still set
+    // languageVersion 25 for consumer code.
     toolchain {
-        languageVersion = JavaLanguageVersion.of(25)
+        languageVersion = JavaLanguageVersion.of(21)
     }
 }
 
