@@ -25,13 +25,20 @@ dependencies {
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
+// Codecov rejects a coverage report whose embedded JaCoCo session timestamp is more than 12 hours
+// old. A build-cache hit restores execution data stamped from whenever the tests last genuinely
+// ran, so a commit that leaves test inputs untouched — a dependency bump, a settings change —
+// uploads a report dated days earlier and the coverage badge goes stale. The execution data has to
+// come from this build, so the two tasks that produce it are excluded from the cache.
 tasks.named('test') {
     useJUnitPlatform()
     finalizedBy tasks.named('jacocoTestReport')
+    outputs.cacheIf { false }
 }
 
 tasks.named('jacocoTestReport') {
     dependsOn tasks.named('test')
+    outputs.cacheIf { false }
     reports {
         xml.required = true
         html.required = true
