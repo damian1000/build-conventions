@@ -205,7 +205,14 @@ def writeSuppressions = tasks.register('writeDependencyCheckSuppressions') {
     }
 }
 
-tasks.matching { it.name in ['dependencyCheckAnalyze', 'dependencyCheckAggregate'] }.configureEach {
+// Wired with tasks.named rather than tasks.matching{}.configureEach: the latter realises every
+// task in the project, which changes when Spotless resolves its ktlint classpath and leaves it
+// incomplete — spotlessKotlinCheck then dies with NoClassDefFoundError on EditorConfigDefaults.
+tasks.named('dependencyCheckAnalyze') {
+    dependsOn writeSuppressions
+}
+
+tasks.named('dependencyCheckAggregate') {
     dependsOn writeSuppressions
 }
 
