@@ -30,10 +30,52 @@ dependencies {
 // ran, so a commit that leaves test inputs untouched — a dependency bump, a settings change —
 // uploads a report dated days earlier and the coverage badge goes stale. The execution data has to
 // come from this build, so the two tasks that produce it are excluded from the cache.
+// Testcontainers suites are skipped when no Docker daemon is reachable, so `test` goes green and
+// jacocoTestCoverageVerification then fails on a percentage that measured a fraction of the suite.
+// That reads as "the build is broken" to anyone who does not already know Docker was missing.
+def dockerCheckEnabled = !providers.gradleProperty('conventions.skipDockerCheck').present
+
 tasks.named('test') {
     useJUnitPlatform()
     finalizedBy tasks.named('jacocoTestReport')
     outputs.cacheIf { false }
+}
+
+// Deferred: the consumer declares its dependencies after this plugin is applied, so whether the
+// project uses Testcontainers is not yet knowable here.
+afterEvaluate {
+    def declaresTestcontainers = ['testImplementation', 'testRuntimeOnly'].any { name ->
+        configurations.findByName(name)?.dependencies?.any { it.group == 'org.testcontainers' }
+    }
+    if (!declaresTestcontainers || !dockerCheckEnabled) {
+        return
+    }
+    tasks.named('test') {
+        doFirst {
+            def reachable = false
+            try {
+                // Output goes to the null device rather than a pipe: closing a pipe the daemon is
+                // still writing to kills `docker info` with EPIPE and reads as "no Docker".
+                def probe = new ProcessBuilder('docker', 'info', '--format', '{{.ServerVersion}}')
+                        .redirectErrorStream(true)
+                        .redirectOutput(ProcessBuilder.Redirect.DISCARD)
+                        .start()
+                reachable = probe.waitFor(30, java.util.concurrent.TimeUnit.SECONDS) && probe.exitValue() == 0
+                if (probe.alive) {
+                    probe.destroyForcibly()
+                }
+            } catch (IOException ignored) {
+                reachable = false // no docker on PATH
+            }
+            if (!reachable) {
+                throw new GradleException(
+                        'No reachable Docker daemon. This project has Testcontainers suites, which would be ' +
+                        'silently skipped, and the coverage gate would then fail on a percentage that did not ' +
+                        'measure them. Start Docker, or pass -Pconventions.skipDockerCheck to run the rest of ' +
+                        'the suite knowingly without them.')
+            }
+        }
+    }
 }
 
 tasks.named('jacocoTestReport') {
@@ -81,9 +123,19 @@ spotless {
 }
 
 // OWASP dependency vulnerability scanner. Fails the build on any dependency with CVSS >= 7.0.
+// The NVD API throttles unauthenticated callers to the point where an update run takes tens of
+// minutes and starts returning 403s, so CI passes NVD_API_KEY. A local run without one still
+// works; it is only slow.
+def nvdApiKey = providers.environmentVariable('NVD_API_KEY').orNull
+
 dependencyCheck {
     failBuildOnCVSS = 7.0f
     formats = ['HTML', 'JSON']
+    if (nvdApiKey) {
+        nvd {
+            apiKey = nvdApiKey
+        }
+    }
     analyzers {
         assemblyEnabled = false
         nodeEnabled = false
