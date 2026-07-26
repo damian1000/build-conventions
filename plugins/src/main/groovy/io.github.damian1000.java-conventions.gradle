@@ -131,6 +131,10 @@ def nvdApiKey = providers.environmentVariable('NVD_API_KEY').orNull
 dependencyCheck {
     failBuildOnCVSS = 7.0f
     formats = ['HTML', 'JSON']
+    // Scan what the application ships rather than every configuration, so build-time toolchain
+    // jars do not fail an application scan for something it does not deploy. Platform-level
+    // advisories surface in build-conventions' own scan, where the versions are chosen.
+    scanConfigurations = ['runtimeClasspath']
     if (nvdApiKey) {
         nvd {
             apiKey = nvdApiKey
