@@ -177,6 +177,12 @@ def nvdApiKey = providers.environmentVariable('NVD_API_KEY').orNull
 dependencyCheck {
     failBuildOnCVSS = 7.0f
     formats = ['HTML', 'JSON']
+    // Scan what the service ships. The default scans every configuration, which drags in the
+    // Kotlin compiler's own artifacts — the first scheduled run failed every Kotlin repository on
+    // CVE-2026-53914 in abi-tools, a build-time toolchain jar that no service deploys. That CVE
+    // is real and tracked where the decision lives: the Kotlin pin in build-conventions, whose
+    // own scan still reports it because kotlin-gradle-plugin is a direct dependency there.
+    scanConfigurations = ['runtimeClasspath']
     if (nvdApiKey) {
         nvd {
             apiKey = nvdApiKey
