@@ -1,5 +1,8 @@
 plugins {
-    // Provisions the JDK 25 toolchain on machines/builders that lack it (e.g. JitPack).
+    // Load-bearing, unlike in the consumer repos that run Gradle on their toolchain JDK already:
+    // :plugins compiles against JDK 21 (see plugins/build.gradle) while CI and local dev run
+    // Gradle on JDK 25, so the toolchain has to be provisioned. Without this, a clean checkout
+    // fails with "Cannot find a Java installation ... languageVersion=21".
     id 'org.gradle.toolchains.foojay-resolver-convention' version '1.0.0'
 }
 
