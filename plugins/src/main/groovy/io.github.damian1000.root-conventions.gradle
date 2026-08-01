@@ -74,6 +74,14 @@ dependencyCheck {
     suppressionFile = suppressions.get().asFile.absolutePath
     failBuildOnCVSS = 7.0f
     formats = ['HTML', 'JSON']
+    // Scan what the modules ship, as java-conventions and kotlin-conventions already do. Without
+    // this the aggregate walks every configuration, including the buildscript classpath that the
+    // convention plugin itself puts kotlin-gradle-plugin on — orderbook's first completed scan
+    // reported 20 findings, every one of them CVE-2026-53914 against a build-time toolchain jar:
+    // abi-tools, kotlin-compiler-embeddable, kotlin-build-tools-*, kotlin-daemon-*. None of those
+    // is deployed, and the suppression deliberately names only kotlin-stdlib and kotlin-reflect
+    // rather than growing to cover the whole toolchain.
+    scanConfigurations = ['runtimeClasspath']
     if (nvdApiKey) {
         nvd {
             apiKey = nvdApiKey
