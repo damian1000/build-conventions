@@ -43,7 +43,7 @@ pluginManagement {
 
 ```groovy
 plugins {
-    id 'io.github.damian1000.kotlin-conventions' version '0.4.9'
+    id 'io.github.damian1000.kotlin-conventions' version '0.4.10'
     id 'application' // if the repository is an application
 }
 
@@ -66,7 +66,7 @@ dependencyResolutionManagement {
     }
     versionCatalogs {
         create('deps') {
-            from 'com.github.damian1000.build-conventions:catalog:0.4.9'
+            from 'com.github.damian1000.build-conventions:catalog:0.4.10'
         }
     }
 }
