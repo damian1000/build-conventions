@@ -30,4 +30,11 @@ dependencies {
     implementation 'org.jetbrains.kotlin:kotlin-gradle-plugin:2.3.21'
     implementation 'com.diffplug.spotless:spotless-plugin-gradle:8.8.0'
     implementation 'org.owasp:dependency-check-gradle:12.2.2'
+
+    // The same Jackson floor the convention plugins put under every consumer, applied here
+    // because this project does not apply them to itself. dependency-check-gradle 12.2.2 — the
+    // current release — resolves jackson-databind 2.21.3 through open-vulnerability-clients,
+    // which 11 advisories cover, 3 of them high. Spotless is not a source of Jackson at all, so
+    // the 8.9.0 upgrade does not address them.
+    implementation platform('com.fasterxml.jackson:jackson-bom:2.21.5')
 }
