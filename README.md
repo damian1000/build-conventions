@@ -18,6 +18,25 @@ Front-end tooling in `kotlin-conventions` is content-driven: web assets under
 wires `npm run lint` (ESLint) into `check`. A repository is different only because of what it
 holds — the CI pipeline stays identical.
 
+## How this repository is checked
+
+This is the one repository whose bytecode every other repository executes: its plugins are on
+each consumer's buildscript classpath, and the shared CI calls those builds with
+`secrets: inherit`. It carries the same gates as its consumers, minus one that does not apply:
+
+`ci.yml` runs Spotless and `check`. `dep-review.yml` fails a pull request on a high-severity
+advisory in what the diff adds. `dependabot-automerge.yml` behaves as it does everywhere else;
+merges still wait on the required checks.
+
+`dependency-check.yml` runs `:dependencyCheckAggregate` twice weekly over `:plugins` and
+`:catalog`. It matters more here than anywhere else: the Kotlin, Spotless, and
+dependency-check plugin artifacts reach consumers through the buildscript classpath, which a
+consumer's own scan does not read, so this is the only scan in the estate that sees them.
+
+CodeQL is deliberately absent. The convention plugins are precompiled Gradle script plugins
+(`plugins/src/main/groovy/*.gradle`), and the repository holds no Java or Kotlin source for
+the `java-kotlin` analysis to read.
+
 ## Consuming
 
 `settings.gradle` — add JitPack and map the plugin id to this module:
