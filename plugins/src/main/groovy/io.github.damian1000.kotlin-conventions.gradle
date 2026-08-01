@@ -241,6 +241,12 @@ dependencyCheck {
     if (nvdApiKey) {
         nvd {
             apiKey = nvdApiKey
+            // NVD answers 429 once a key's budget is spent, and the client's default of 10
+            // retries gives up while the throttle is still on — which fails the build on a
+            // transient condition and reads as a security finding in the notification. The
+            // delay is left at its default so a warm incremental update stays fast; the real
+            // protection against exhausting the budget is not downloading the feed from cold.
+            maxRetryCount = 30
         }
     }
     analyzers {
