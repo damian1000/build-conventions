@@ -6,6 +6,11 @@ on:
       # This repository's tags carry no leading `v` — 0.4.12, not v0.4.12.
       - "[0-9]*.[0-9]*.[0-9]*"
 
+# Creating the release and uploading its assets writes to the repository. The default token
+# grant is read-only, and a reusable workflow cannot request more than its caller was given.
+permissions:
+  contents: write
+
 jobs:
   release:
     uses: damian1000/.github/.github/workflows/release.yml@main
