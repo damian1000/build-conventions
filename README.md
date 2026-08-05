@@ -62,14 +62,31 @@ pluginManagement {
 
 ```groovy
 plugins {
-    id 'io.github.damian1000.kotlin-conventions' version '0.4.11'
+    id 'io.github.damian1000.kotlin-conventions' version '0.4.13'
     id 'application' // if the repository is an application
 }
 
 dependencies {
     // only what this repository actually needs
 }
+
+// Class files kept out of both the coverage report and the 90% gate. Every service needs at least
+// its process entry point here: main() binds a real port, or a real database, and blocks.
+coverageExcludes = ['**/MainKt.class']
 ```
+
+### Knobs
+
+| Property                          | Where               | Effect                                                                                                     |
+| --------------------------------- | ------------------- | ---------------------------------------------------------------------------------------------------------- |
+| `coverageExcludes`                | `build.gradle`      | Class-file patterns excluded from the JaCoCo report and the coverage gate. Empty by default.               |
+| `conventions.kotlinMaxLineLength` | `gradle.properties` | Relaxes the ktlint line length for mock-heavy test code (e.g. `160`). Unset keeps the default.             |
+| `conventions.skipDockerCheck`     | command line        | Runs a Testcontainers project's suite knowingly without Docker, instead of failing before the tests start. |
+
+`coverageExcludes` exists because eight repositories were each carrying the same sixteen-line
+`afterEvaluate` / `fileTree` block to exclude an entry point — in two different spellings, which is
+how a shared rule quietly stops being one. Keep exclusions to code a test genuinely cannot reach; a
+coverage number is only worth reporting if it is measuring the code that matters.
 
 ## Version catalog
 

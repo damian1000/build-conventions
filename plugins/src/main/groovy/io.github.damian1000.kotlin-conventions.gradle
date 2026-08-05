@@ -98,6 +98,13 @@ afterEvaluate {
     }
 }
 
+// Class-file patterns kept out of both the coverage report and the gate, e.g.
+// coverageExcludes = ['**/web/WebServerKt.class']. Every consumer needs at least its process entry
+// point excluded, and each was carrying the same ~16-line afterEvaluate/fileTree block to do it —
+// in two different spellings, which is how a shared rule stops being one. Declared as an extension
+// property rather than a plugin extension so a consumer sets it with one line and no import.
+ext.coverageExcludes = []
+
 tasks.named('jacocoTestReport') {
     dependsOn tasks.named('test')
     outputs.cacheIf { false }
@@ -115,6 +122,21 @@ tasks.named('jacocoTestCoverageVerification') {
                 counter = 'INSTRUCTION'
                 value = 'COVEREDRATIO'
                 minimum = 0.90
+            }
+        }
+    }
+}
+
+// Deferred to the project, not the task: the consumer assigns coverageExcludes after this plugin is
+// applied, so the value is not knowable at configuration time. classDirectories is rebuilt rather
+// than filtered because JaCoCo resolves it from the compiled output, and an exclude has to be
+// applied to that tree.
+afterEvaluate {
+    def patterns = project.ext.coverageExcludes
+    if (patterns) {
+        ['jacocoTestReport', 'jacocoTestCoverageVerification'].each { name ->
+            tasks.named(name) { task ->
+                task.classDirectories.setFrom(files(task.classDirectories.files.collect { fileTree(dir: it, excludes: patterns) }))
             }
         }
     }
