@@ -37,20 +37,25 @@ dependencies {
     // which 11 advisories cover, 3 of them high. Spotless is not a source of Jackson at all, so
     // the 8.9.0 upgrade does not address them.
     implementation platform('com.fasterxml.jackson:jackson-bom:2.22.1')
+}
 
-    constraints {
-        // Same plugin, same shape of problem as the Jackson floor above. dependency-check-gradle
-        // 12.2.2 resolves jsoup 1.22.2, which CVE-2026-71497 covers: Cleaner can be made to emit
-        // markup through a custom raw-text element. Fixed in 1.23.1.
-        //
-        // jsoup publishes no BOM, so this is a constraint rather than a platform. It is the only
-        // open advisory on the estate, and the exposure is bounded — this classpath is a Gradle
-        // plugin's, so nothing here reaches a running service, and the affected API is the HTML
-        // sanitiser, which neither this project nor dependency-check uses on untrusted input.
-        // Raised anyway: an advisory that is reasoned away rather than fixed has to be reasoned
-        // away again every time somebody reads the alert.
-        implementation('org.jsoup:jsoup:1.23.1') {
-            because 'CVE-2026-71497 affects jsoup >= 1.14.3, < 1.23.1 via dependency-check-gradle'
-        }
+// jsoup arrives through dependency-check-gradle at 1.22.2, which CVE-2026-71497 covers: Cleaner
+// can be made to emit markup through a custom raw-text element. Fixed in 1.23.1.
+//
+// A resolutionStrategy rather than a dependency constraint, and the difference is load-bearing.
+// A constraint is published into this module's POM, so it reaches every consumer's buildscript
+// classpath — and doing that broke ktlint in orderbook: 25 files failed spotlessKotlinCheck with
+// NoClassDefFoundError on EditorConfigDefaults, the same fragility the ktlint wiring in
+// kotlin-conventions already warns about, where a change in how the plugin classpath resolves
+// leaves Spotless's ktlint classpath incomplete. Verified by bisect: the four Dependabot bumps in
+// the same release were clean, the constraint alone reproduced it.
+//
+// Forcing is build-local, publishes nothing, and is the right scope anyway. This classpath is a
+// Gradle plugin's, so the exposure never reaches a running service; the copy that does is in
+// stocks-analysis-us, where Tika pulls the same version onto the runtime classpath and a
+// constraint is declared for it there.
+configurations.configureEach {
+    resolutionStrategy {
+        force 'org.jsoup:jsoup:1.23.1'
     }
 }
