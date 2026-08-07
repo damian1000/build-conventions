@@ -6,7 +6,7 @@ plugins {
     // The platform scans its own dependencies too: the Kotlin, Spotless and dependency-check
     // plugins it puts on every consumer's buildscript classpath are exactly the ones a consumer
     // scan never sees. `dependencyCheckAggregate` covers :plugins and :catalog.
-    id 'org.owasp.dependencycheck' version '12.2.2'
+    id 'org.owasp.dependencycheck' version '13.0.0'
 }
 
 version = '0.4.13'
