@@ -37,4 +37,20 @@ dependencies {
     // which 11 advisories cover, 3 of them high. Spotless is not a source of Jackson at all, so
     // the 8.9.0 upgrade does not address them.
     implementation platform('com.fasterxml.jackson:jackson-bom:2.22.1')
+
+    constraints {
+        // Same plugin, same shape of problem as the Jackson floor above. dependency-check-gradle
+        // 12.2.2 resolves jsoup 1.22.2, which CVE-2026-71497 covers: Cleaner can be made to emit
+        // markup through a custom raw-text element. Fixed in 1.23.1.
+        //
+        // jsoup publishes no BOM, so this is a constraint rather than a platform. It is the only
+        // open advisory on the estate, and the exposure is bounded — this classpath is a Gradle
+        // plugin's, so nothing here reaches a running service, and the affected API is the HTML
+        // sanitiser, which neither this project nor dependency-check uses on untrusted input.
+        // Raised anyway: an advisory that is reasoned away rather than fixed has to be reasoned
+        // away again every time somebody reads the alert.
+        implementation('org.jsoup:jsoup:1.23.1') {
+            because 'CVE-2026-71497 affects jsoup >= 1.14.3, < 1.23.1 via dependency-check-gradle'
+        }
+    }
 }
